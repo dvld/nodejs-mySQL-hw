@@ -1,13 +1,13 @@
 
-// init npm
-var mysql = require('mysql');
-var inquirer = require('inquirer');
+// dependencies
+const mysql = require('mysql');
+const inquirer = require('inquirer');
 require('console.table');
 
 // __________
 
-// init connection, sync w/db
-var connection = mysql.createConnection({
+// connect to mysql database
+const connection = mysql.createConnection({
   host: 'localhost',
   port: 3306,
   user: 'root',
@@ -15,8 +15,8 @@ var connection = mysql.createConnection({
   database: 'bamazon'
 });
 
-// create server connection and load manager menu
-connection.connect(function (err) {
+// create server connection, if successful, load manager menu
+connection.connect(err => {
 
   if (err) {
     console.error('Error connecting: ' + err.stack);
@@ -27,7 +27,7 @@ connection.connect(function (err) {
 
 // __________
 
-function managerMenu() {
+const managerMenu = () => {
   connection.query('SELECT * FROM products', function (err, res) {
 
     if (err) throw err;
@@ -38,7 +38,7 @@ function managerMenu() {
 
 // __________
 
-function managerOptions(products) {
+const managerOptions = products => {
   inquirer
     .prompt({
       type: 'list',
@@ -46,7 +46,7 @@ function managerOptions(products) {
       choices: ['Products for sale', 'Low stock', 'Restock', 'New product', 'Quit'],
       message: 'What would you like to do?'
     })
-    .then(function (val) {
+    .then(val => {
       switch (val.choice) {
 
         case 'Products for sale':
@@ -67,7 +67,7 @@ function managerOptions(products) {
           break;
 
         default:
-          console.log('Goodbye!');
+          console.log(`Goodbye!`);
           process.exit(0);
           break;
       }
@@ -76,8 +76,8 @@ function managerOptions(products) {
 
 // ___________
 
-function lowStock() {
-  connection.query('SELECT * FROM products WHERE stock_quantity <= 5', function (err, res) {
+const lowStock = () => {
+  connection.query('SELECT * FROM products WHERE stock_quantity <= 5', (err, res) => {
     if (err) throw err;
 
     console.table(res);
@@ -87,7 +87,7 @@ function lowStock() {
 
 // ___________
 
-function restock(stock) {
+const restock = stock => {
   console.table(stock);
   inquirer
     .prompt([
@@ -100,22 +100,22 @@ function restock(stock) {
         }
       }
     ])
-    .then(function (val) {
-      var choiceId = parseInt(val.choice);
-      var product = checkStock(choiceId, stock);
+    .then(val => {
+      let choiceId = parseInt(val.choice);
+      let product = checkStock(choiceId, stock);
 
       if (product) {
         howMany(product);
 
       } else {
-        console.log('\nInvalid item_id.');
+        console.log(`\nInvalid item_id.`);
         managerMenu();
       }
 
     });
 }
 
-function howMany(product) {
+const howMany = product => {
   inquirer
     .prompt([
       {
@@ -127,24 +127,24 @@ function howMany(product) {
         }
       }
     ])
-    .then(function (val) {
-      var quantity = parseInt(val.quantity);
+    .then(val => {
+      let quantity = parseInt(val.quantity);
       updateStock(product, quantity);
     });
 }
 
-function updateStock(product, quantity) {
+const updateStock = (product, quantity) => {
   connection.query(
     'UPDATE products SET stock_quantity = ? WHERE item_id = ?',
     [product.stock_quantity + quantity, product.item_id],
     function (err, res) {
-      console.log('\nRestock successful, ' + quantity + ' ' + product.product_name + "'s added!\n");
+      console.log(`\nRestock successful, ${quantity} ${product.product_name}'s added!\n`);
       managerMenu();
     }
   );
 }
 
-function newProduct(products) {
+const newProduct = (products) => {
   inquirer
     .prompt([
       {
@@ -183,13 +183,13 @@ function newProduct(products) {
 
 // __________
 
-function updateProducts(val) {
+const updateProducts = (val) => {
   connection.query(
     'INSERT INTO products (product_name, department_name, price, stock_quantity) VALUES (?, ?, ?, ?)',
     [val.product_name, val.department_name, val.price, val.quantity],
-    function (err, res) {
+    (err, res) => {
       if (err) throw err;
-      console.log(val.product_name + 'New product added!\n');
+      console.log(`${val.product_name} New product added!\n`);
       managerMenu();
     }
   );
@@ -197,9 +197,9 @@ function updateProducts(val) {
 
 // ___________
 
-function allDepartments(products) {
-  var departments = [];
-  for (var i = 0; i < products.length; i++) {
+const allDepartments = products => {
+  let departments = [];
+  for (let i = 0; i < products.length; i++) {
     if (departments.indexOf(products[i].department_name) === -1) {
       departments.push(products[i].department_name);
     }
@@ -209,10 +209,11 @@ function allDepartments(products) {
 
 // ___________
 
-function checkStock(choiceId, stock) {
-  for (var i = 0; i < stock.length; i++) {
+const checkStock = (choiceId, stock) => {
+  for (let i = 0; i < stock.length; i++) {
     if (stock[i].item_id === choiceId) {
       return stock[i];
     }
-  }return null;
+  }
+  return null;
 }

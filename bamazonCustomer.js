@@ -1,13 +1,13 @@
 
-// init npm
-var mysql = require("mysql");
-var inquirer = require("inquirer");
+// dependencies
+const mysql = require("mysql");
+const inquirer = require("inquirer");
 require("console.table");
 
 // ___________
 
-// init connection, sync w/ db
-var connection = mysql.createConnection({
+// connect to sql database
+const connection = mysql.createConnection({
   host: "localhost",
   port: 3306,
   user: "root",
@@ -17,11 +17,11 @@ var connection = mysql.createConnection({
 
 // ___________
 
-// create server connection and load data
-connection.connect(function (err) {
+// create server connection, if successful, load data
+connection.connect(err => {
 
   if (err) {
-    console.error("Error connecting: " + err.stack);
+    console.error(`Error connecting: ${err.stack}`);
   }
 
   loadProducts();
@@ -30,9 +30,9 @@ connection.connect(function (err) {
 // ___________
 
 // load table and print results
-function loadProducts() {
+const loadProducts = () => {
 
-  connection.query("SELECT * FROM products", function (err, res) {
+  connection.query("SELECT * FROM products", (err, res) => {
     if (err) throw err;
 
     console.table(res);
@@ -43,7 +43,7 @@ function loadProducts() {
 
 // ___________
 
-function whatWouldYouLikeToBuy(stock) {
+const whatWouldYouLikeToBuy = (stock) => {
   inquirer
     .prompt([
       {
@@ -55,12 +55,12 @@ function whatWouldYouLikeToBuy(stock) {
         }
       }
     ])
-    .then(function (val) {
+    .then(val => {
 
       checkQuit(val.choice);
 
-      var choiceId = parseInt(val.choice);
-      var product = checkStock(choiceId, stock);
+      let choiceId = parseInt(val.choice);
+      let product = checkStock(choiceId, stock);
 
       if (product) {
         howManyToBuy(product);
@@ -74,7 +74,7 @@ function whatWouldYouLikeToBuy(stock) {
 
 // __________
 
-function howManyToBuy(product) {
+const howManyToBuy = (product) => {
   inquirer
     .prompt([
       {
@@ -86,10 +86,10 @@ function howManyToBuy(product) {
         }
       }
     ])
-    .then(function (val) {
+    .then(val => {
       checkQuit(val.quantity);
 
-      var quantity = parseInt(val.quantity);
+      let quantity = parseInt(val.quantity);
 
       if (quantity > product.stock_quantity) {
         console.log("\nInsufficient quantity!");
@@ -103,12 +103,12 @@ function howManyToBuy(product) {
 
 // __________
 
-function confirmPurchase(product, quantity) {
+const confirmPurchase = (product, quantity) => {
   connection.query(
     "UPDATE products SET stock_quantity = stock_quantity - ? WHERE item_id = ?",
     [quantity, product.item_id],
-    function (err, res) {
-      console.log("\nPurchase Successful " + quantity + " " + product.product_name + "'s!");
+    (err, res) => {
+      console.log(`\nPurchase Successful ${quantity} ${product.product_name}'s!`);
       loadProducts();
     }
   );
@@ -116,8 +116,8 @@ function confirmPurchase(product, quantity) {
 
 // __________
 
-function checkStock(choiceId, stock) {
-  for (var i = 0; i < stock.length; i++) {
+const checkStock = (choiceId, stock) => {
+  for (let i = 0; i < stock.length; i++) {
     if (stock[i].item_id === choiceId) {
       return stock[i];
     }
@@ -125,7 +125,7 @@ function checkStock(choiceId, stock) {
   return null;
 }
 
-function checkQuit(choice) {
+const checkQuit = choice => {
   if (choice.toLowerCase() === "q") {
     console.log("Goodbye!");
     process.exit(0);
