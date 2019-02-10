@@ -6,7 +6,7 @@ require('console.table');
 
 // __________
 
-// connect to mysql database
+// config connection to mysql database
 const connection = mysql.createConnection({
   host: 'localhost',
   port: 3306,
@@ -19,15 +19,15 @@ const connection = mysql.createConnection({
 connection.connect(err => {
 
   if (err) {
-    console.error('Error connecting: ' + err.stack);
+    console.error(`Error connecting: ${err.stack}`);
   }
 
-  managerMenu();
+  loadManager();
 });
 
 // __________
 
-const managerMenu = () => {
+const loadManager = () => {
   connection.query('SELECT * FROM products', function (err, res) {
 
     if (err) throw err;
@@ -51,7 +51,7 @@ const managerOptions = products => {
 
         case 'Products for sale':
           console.table(products);
-          managerMenu();
+          loadManager();
           break;
 
         case 'Low stock':
@@ -81,7 +81,7 @@ const lowStock = () => {
     if (err) throw err;
 
     console.table(res);
-    managerMenu();
+    loadManager();
   });
 }
 
@@ -109,7 +109,7 @@ const restock = stock => {
 
       } else {
         console.log(`\nInvalid item_id.`);
-        managerMenu();
+        loadManager();
       }
 
     });
@@ -139,7 +139,7 @@ const updateStock = (product, quantity) => {
     [product.stock_quantity + quantity, product.item_id],
     function (err, res) {
       console.log(`\nRestock successful, ${quantity} ${product.product_name}'s added!\n`);
-      managerMenu();
+      loadManager();
     }
   );
 }
@@ -190,7 +190,7 @@ const updateProducts = (val) => {
     (err, res) => {
       if (err) throw err;
       console.log(`${val.product_name} New product added!\n`);
-      managerMenu();
+      loadManager();
     }
   );
 }

@@ -6,7 +6,7 @@ require("console.table");
 
 // ___________
 
-// connect to sql database
+// config connection to sql database
 const connection = mysql.createConnection({
   host: "localhost",
   port: 3306,
